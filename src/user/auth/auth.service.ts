@@ -20,7 +20,7 @@ interface SigninParams {
 export class AuthService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async signup({ name, phone, email, password }: SignupParams) {
+  async signup({ name, phone, email, password }: SignupParams, userType: UserType) {
     const userExists = await this.prismaService.user.findUnique({
       where: {
         email,
@@ -35,11 +35,11 @@ export class AuthService {
         email,
         phone,
         password: hashedPassword,
-        user_type: UserType.BUYER,
+        user_type: userType,
       },
     });
 
-    return this.generateJwt(name, user.id)
+    return this.generateJwt(name, user.id);
   }
 
   async signin({ email, password }: SigninParams) {
@@ -56,7 +56,7 @@ export class AuthService {
 
     if (!isValidPassword) throw new HttpException('Invalid Credentials', 400);
 
-    return this.generateJwt(user.name, user.id)
+    return this.generateJwt(user.name, user.id);
   }
 
   private generateJwt(name: string, id: number) {
@@ -70,5 +70,10 @@ export class AuthService {
         expiresIn: 3600000,
       },
     );
+  }
+
+  generateProductKey(email: string, userType: UserType) {
+    const key = `${email}-${userType}-${process.env.PRODUCT_SECRET_KEY}`;
+    return bcrypt.hash(key, 10);
   }
 }
