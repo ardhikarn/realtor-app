@@ -1,12 +1,17 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, HttpException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import * as bcrypt from 'bcrypt'
-import * as jwt from 'jsonwebtoken'
+import * as bcrypt from 'bcrypt';
+import * as jwt from 'jsonwebtoken';
 import { UserType } from '@prisma/client';
 
 interface SignupParams {
   name: string;
   phone: string;
+  email: string;
+  password: string;
+}
+
+interface SigninParams {
   email: string;
   password: string;
 }
@@ -18,11 +23,11 @@ export class AuthService {
   async signup({ name, phone, email, password }: SignupParams) {
     const userExists = await this.prismaService.user.findUnique({
       where: {
-        email
-      }
-    })
-    if (userExists) throw new ConflictException
-    const hashedPassword = await bcrypt.hash(password, 10)
+        email,
+      },
+    });
+    if (userExists) throw new ConflictException();
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await this.prismaService.user.create({
       data: {
@@ -30,17 +35,40 @@ export class AuthService {
         email,
         phone,
         password: hashedPassword,
-        user_type: UserType.BUYER
-      }
-    })
+        user_type: UserType.BUYER,
+      },
+    });
 
-    const token = await jwt.sign({
-      name,
-      id: user.id
-    }, process.env.JWT_SECRET_KEY, {
-      expiresIn: 3600000
-    })
+    return this.generateJwt(name, user.id)
+  }
 
-    return {token}
+  async signin({ email, password }: SigninParams) {
+    const user = await this.prismaService.user.findFirst({
+      where: {
+        email: email,
+      },
+    });
+
+    if (!user) throw new HttpException('Invalid Credentials', 400);
+
+    const hashedPassword = user.password;
+    const isValidPassword = await bcrypt.compare(password, hashedPassword);
+
+    if (!isValidPassword) throw new HttpException('Invalid Credentials', 400);
+
+    return this.generateJwt(user.name, user.id)
+  }
+
+  private generateJwt(name: string, id: number) {
+    return jwt.sign(
+      {
+        name,
+        id,
+      },
+      process.env.JWT_SECRET_KEY,
+      {
+        expiresIn: 3600000,
+      },
+    );
   }
 }

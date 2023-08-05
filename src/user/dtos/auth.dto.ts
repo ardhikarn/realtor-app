@@ -17,3 +17,12 @@ export class SignupDto {
   @MinLength(5)
   password: string;
 }
+
+export class SigninDto {
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  @MinLength(5)
+  password: string;
+}
