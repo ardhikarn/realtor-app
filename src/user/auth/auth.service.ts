@@ -73,7 +73,7 @@ export class AuthService {
   }
 
   generateProductKey(email: string, userType: UserType) {
-    const key = `${email}-${userType}-${process.env.PRODUCT_SECRET_KEY}`;
+    const key = `${email}-${userType.toLowerCase()}-${process.env.PRODUCT_SECRET_KEY}`;
     return bcrypt.hash(key, 10);
   }
 }
