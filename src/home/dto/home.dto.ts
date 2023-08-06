@@ -47,11 +47,6 @@ export class HomeResponseDto {
   
   propertyType: ProperType;
 
-  @Exclude()
-  images: {
-    url: string
-  }[]
-
   image: string;
 
   @Exclude()
