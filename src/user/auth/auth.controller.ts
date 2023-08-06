@@ -11,8 +11,6 @@ export class AuthController {
   @Post('/signup/:userType')
   async signup(@Body() body: SignupDto, @Param('userType') userType: UserType) {
     const userTypeUpper = userType.toUpperCase() as UserType
-    console.log(userTypeUpper);
-    
     if(userTypeUpper !== UserType.BUYER) {
       if(!body.productKey) {
         throw new UnauthorizedException()

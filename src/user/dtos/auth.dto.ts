@@ -47,3 +47,21 @@ export class GenerateProductKeyDto {
   @IsEnum(UserType)
   userType: UserType;
 }
+
+export class AuthResponseDto {
+  status: string;
+  message: string;
+  code: number;
+  data: Data
+
+  constructor(partial: Partial<AuthResponseDto>) {
+    Object.assign(this, partial);
+  }
+}
+
+class Data {
+  userId: number;
+  name: string;
+  type: UserType;
+  token?: string
+}

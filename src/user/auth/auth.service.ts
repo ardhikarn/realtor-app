@@ -1,8 +1,14 @@
-import { ConflictException, Injectable, HttpException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { UserType } from '@prisma/client';
+import { AuthResponseDto } from '../dtos/auth.dto';
 
 interface SignupParams {
   name: string;
@@ -20,7 +26,10 @@ interface SigninParams {
 export class AuthService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async signup({ name, phone, email, password }: SignupParams, userType: UserType) {
+  async signup(
+    { name, phone, email, password }: SignupParams,
+    userType: UserType,
+  ): Promise<AuthResponseDto> {
     const userExists = await this.prismaService.user.findUnique({
       where: {
         email,
@@ -39,7 +48,20 @@ export class AuthService {
       },
     });
 
-    return this.generateJwt(name, user.id);
+    const token = await this.generateJwt(name, user.id);
+
+    const result = {
+      code: HttpStatus.CREATED,
+      status: 'success',
+      message: 'Signup successful',
+      data: {
+        userId: user.id,
+        name: user.name,
+        type: userType,
+        token: token,
+      },
+    };
+    return new AuthResponseDto(result);
   }
 
   async signin({ email, password }: SigninParams) {
@@ -56,7 +78,21 @@ export class AuthService {
 
     if (!isValidPassword) throw new HttpException('Invalid Credentials', 400);
 
-    return this.generateJwt(user.name, user.id);
+    const token = await this.generateJwt(user.name, user.id);
+
+    const result = {
+      code: HttpStatus.OK,
+      status: 'success',
+      message: 'Signin successful',
+      data: {
+        userId: user.id,
+        name: user.name,
+        type: user.user_type,
+        token: token,
+      },
+    };
+
+    return new AuthResponseDto(result); 
   }
 
   private generateJwt(name: string, id: number) {
@@ -73,7 +109,9 @@ export class AuthService {
   }
 
   generateProductKey(email: string, userType: UserType) {
-    const key = `${email}-${userType.toLowerCase()}-${process.env.PRODUCT_SECRET_KEY}`;
+    const key = `${email}-${userType.toLowerCase()}-${
+      process.env.PRODUCT_SECRET_KEY
+    }`;
     return bcrypt.hash(key, 10);
   }
 }
