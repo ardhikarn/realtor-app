@@ -55,12 +55,14 @@ export class HomeController {
   updateHome(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateHomeDto,
-  ) {
+  ): Promise<HomeResponseDto> {
     return this.homeService.updateHome(id, body);
   }
 
   @Delete(':id')
-  deleteHome() {
-    return 'delete';
+  deleteHome(
+    @Param('id', ParseIntPipe) id: number
+  ): Promise<HomeResponseDto[]> {
+    return this.homeService.deleteHome(id)
   }
 }

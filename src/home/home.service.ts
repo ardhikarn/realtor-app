@@ -134,34 +134,61 @@ export class HomeService {
     return new HomeResponseDto(home);
   }
 
-  async updateHome(id: number, data: UpdateHomeParam ) {
+  async updateHome(id: number, data: UpdateHomeParam) {
     const newData = {
       ...data,
-      ...(data.landSize && {land_size: data.landSize}),
-      ...(data.numberOfBathrooms && {number_of_bathrooms: data.numberOfBathrooms}),
-      ...(data.numberOfBedrooms && {number_of_bedrooms: data.numberOfBedrooms})
-    }
+      ...(data.landSize && { land_size: data.landSize }),
+      ...(data.numberOfBathrooms && {
+        number_of_bathrooms: data.numberOfBathrooms,
+      }),
+      ...(data.numberOfBedrooms && {
+        number_of_bedrooms: data.numberOfBedrooms,
+      }),
+    };
 
-    if (newData.landSize) delete newData.landSize
-    if (newData.numberOfBathrooms) delete newData.numberOfBathrooms
-    if (newData.numberOfBedrooms) delete newData.numberOfBedrooms
-    
+    if (newData.landSize) delete newData.landSize;
+    if (newData.numberOfBathrooms) delete newData.numberOfBathrooms;
+    if (newData.numberOfBedrooms) delete newData.numberOfBedrooms;
+
     const home = await this.prismaService.home.findUnique({
       where: {
-        id
-      }
-    })
+        id,
+      },
+    });
 
     if (!home) throw new NotFoundException();
 
     const updatedHome = await this.prismaService.home.update({
       where: {
-        id
+        id,
       },
-      data: newData
+      data: newData,
+    });
+
+    return new HomeResponseDto(updatedHome);
+  }
+
+  async deleteHome(id: number) {
+    const home = await this.prismaService.home.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!home) throw new NotFoundException();
+
+    await this.prismaService.image.deleteMany({
+      where: {
+        home_id: id
+      }
     })
 
-    return new HomeResponseDto(updatedHome)
+    await this.prismaService.home.delete({
+      where: { id },
+    });
 
+    return (await this.prismaService.home.findMany()).map(v => {
+      return new HomeResponseDto(v)
+    })
   }
 }
