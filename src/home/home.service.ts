@@ -25,6 +25,16 @@ interface CreateHomeParam {
   }[];
 }
 
+interface UpdateHomeParam {
+  address?: string;
+  numberOfBedrooms?: number;
+  numberOfBathrooms?: number;
+  city?: string;
+  price?: number;
+  landSize?: number;
+  propertyType?: ProperType;
+}
+
 const homeSelect = {
   id: true,
   address: true,
@@ -122,5 +132,36 @@ export class HomeService {
     });
 
     return new HomeResponseDto(home);
+  }
+
+  async updateHome(id: number, data: UpdateHomeParam ) {
+    const newData = {
+      ...data,
+      ...(data.landSize && {land_size: data.landSize}),
+      ...(data.numberOfBathrooms && {number_of_bathrooms: data.numberOfBathrooms}),
+      ...(data.numberOfBedrooms && {number_of_bedrooms: data.numberOfBedrooms})
+    }
+
+    if (newData.landSize) delete newData.landSize
+    if (newData.numberOfBathrooms) delete newData.numberOfBathrooms
+    if (newData.numberOfBedrooms) delete newData.numberOfBedrooms
+    
+    const home = await this.prismaService.home.findUnique({
+      where: {
+        id
+      }
+    })
+
+    if (!home) throw new NotFoundException();
+
+    const updatedHome = await this.prismaService.home.update({
+      where: {
+        id
+      },
+      data: newData
+    })
+
+    return new HomeResponseDto(updatedHome)
+
   }
 }

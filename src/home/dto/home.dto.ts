@@ -1,6 +1,16 @@
 import { ProperType } from '@prisma/client';
 import { Exclude, Expose, Type } from 'class-transformer';
-import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString, Validate, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsPositive,
+  IsString,
+  Validate,
+  ValidateNested,
+} from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
 
 export class HomeResponseDto {
   id: number;
@@ -87,17 +97,53 @@ export class CreateHomeDto {
   @IsPositive()
   landSize: number;
 
-  @IsEnum(ProperType)
+  @IsEnum(ProperType, { message: 'Value Property Type Not Valid' })
   propertyType: ProperType;
 
   @IsArray()
-  @ValidateNested({each: true})
+  @ValidateNested({ each: true })
   @Type(() => Image)
-  images: Image[]
+  images: Image[];
 }
 
 class Image {
   @IsString()
-  @IsNotEmpty() 
-  url: string
+  @IsNotEmpty()
+  url: string;
 }
+
+// export class UpdateHomeDto {
+//   @IsString()
+//   @IsNotEmpty()
+//   address: string;
+
+//   @IsNumber()
+//   @IsPositive()
+//   numberOfBedrooms: number;
+
+//   @IsNumber()
+//   @IsPositive()
+//   numberOfBathrooms: number;
+
+//   @IsString()
+//   @IsNotEmpty()
+//   city: string;
+
+//   @IsNumber()
+//   @IsPositive()
+//   price: number;
+
+//   @IsNumber()
+//   @IsPositive()
+//   landSize: number;
+
+//   @IsEnum(ProperType)
+//   propertyType: ProperType;
+
+//   @IsArray()
+//   @ValidateNested({each: true})
+//   @Type(() => Image)
+//   images: Image[]
+// }
+
+export class UpdateHomeDto extends PartialType(CreateHomeDto) {}
