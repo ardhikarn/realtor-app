@@ -48,6 +48,6 @@ export class AuthGuard implements CanActivate {
         throw new ForbiddenException('Access denied');
       }
     }
-    throw new ForbiddenException('Access denied');
+    return true;
   }
 }
