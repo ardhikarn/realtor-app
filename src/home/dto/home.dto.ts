@@ -112,38 +112,13 @@ class Image {
   url: string;
 }
 
-// export class UpdateHomeDto {
-//   @IsString()
-//   @IsNotEmpty()
-//   address: string;
-
-//   @IsNumber()
-//   @IsPositive()
-//   numberOfBedrooms: number;
-
-//   @IsNumber()
-//   @IsPositive()
-//   numberOfBathrooms: number;
-
-//   @IsString()
-//   @IsNotEmpty()
-//   city: string;
-
-//   @IsNumber()
-//   @IsPositive()
-//   price: number;
-
-//   @IsNumber()
-//   @IsPositive()
-//   landSize: number;
-
-//   @IsEnum(ProperType)
-//   propertyType: ProperType;
-
-//   @IsArray()
-//   @ValidateNested({each: true})
-//   @Type(() => Image)
-//   images: Image[]
-// }
-
+// export class UpdateHomeDto extends PartialType(CreateHomeDto) {}
+// ini membuat semua field menjadi optional
 export class UpdateHomeDto extends PartialType(CreateHomeDto) {}
+
+
+export class InquireDto {
+  @IsString()
+  @IsNotEmpty()
+  message: string;
+}
