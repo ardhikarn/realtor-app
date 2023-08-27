@@ -6,6 +6,7 @@ export interface User {
   iat: number;
   exp: number
 }
+// createParamDecorator is a function that takes a function as an argument
 export const User = createParamDecorator((data, ctx: ExecutionContext): User => {
   const request = ctx.switchToHttp().getRequest()
   return request.user

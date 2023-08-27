@@ -35,7 +35,9 @@ export class AuthService {
         email,
       },
     });
-    if (userExists) throw new ConflictException();
+    if (userExists) throw new ConflictException(
+      'Email already exists. Please use another email',
+    );
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await this.prismaService.user.create({
@@ -113,5 +115,13 @@ export class AuthService {
       process.env.PRODUCT_SECRET_KEY
     }`;
     return bcrypt.hash(key, 10);
+  }
+
+  logout() {
+    return {
+      code: HttpStatus.OK,
+      status: 'success',
+      message: 'Logout successful',
+    };
   }
 }
